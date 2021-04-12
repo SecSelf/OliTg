@@ -12,7 +12,7 @@ import asyncio
 loop = asyncio.get_event_loop()
 
 
-API_TOKEN = '1693228695:AAFulofIFfHLHc6ZSYTZEc_MqqzxSt16VDE'
+API_TOKEN = ''
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
