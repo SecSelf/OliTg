@@ -6,13 +6,14 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from checker import parse_2, parse_test
+import time, threading
 import asyncio
 
 
 loop = asyncio.get_event_loop()
 
 
-API_TOKEN = ''
+API_TOKEN = '2087397921:AAHGOsvOvTDTfhOfrqv-Ja-TszNe4dIv5ow'
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,9 +70,26 @@ class UrlChecker(StatesGroup): # URL checking states for aiogram.
 
 @dp.message_handler(commands=['newapp']) # Add new application into the DB. Only https/http links.
 async def test_f(message: types.Message):
-    await message.answer("Вставьте ссылку на приложение.\n Ссылка должна начинаться с http:// или https:// и вести в "
-                         "Google Play.")
-    await UrlChecker.URL.set()
+    u_role = admin_check(user_id=message.from_user.id)
+    if u_role == 'admin':
+        await message.answer("Вставьте ссылку на приложение.\n Ссылка должна начинаться с http:// или https:// и вести в "
+                             "Google Play.")
+        await UrlChecker.URL.set()
+    else:
+        await message.answer(
+            "У вас недостаточно прав")
+
+
+"""@dp.message_handler(commands=['applist'])
+async def test_f(message: types.Message):
+    u_role = admin_check(user_id=message.from_user.id)
+    if u_role == 'admin':
+        get_app_name()
+        await message.answer(text=get_app_name())
+    else:
+        await message.answer("У вас недостаточно прав!")
+"""
+
 
 
 @dp.message_handler(state=UrlChecker.URL) # Checking app availability, using states for url checker.
@@ -131,21 +149,43 @@ async def command_cancel(message: types.Message, state: FSMContext):
 """
 
 
-async def send_note(bot: Bot): # Auto mailing if app is banned.
-    while True:
-        await asyncio.sleep(8)
+async def check_app(bot: Bot): # Auto mailing if app is banned.
+    if True:
+        await asyncio.sleep(30)
         await parse_test()
         app_status = get_app_status()
         print(app_status)
-        if app_status:
+    if True:
+        await asyncio.sleep(5)
+        await parse_test()
+        isapp_banned = get_app_status()
+        print(isapp_banned)
+        if isapp_banned:
             get_name = get_app_name()
-            await bot.send_message(chat_id=245070829, text = 'Прила ' + get_name + ' забанена. Просьба, '
-                                                                                   'переключить трафик. ')
-            delete_app(url=app_status)
+            users_ids = get_subscribed_users()
+            for i in users_ids:
+                for b in i:
+                    await bot.send_message(chat_id=b, text=get_name)
+            delete_app()
+
+
+async def send_note(bot: Bot):  # Auto mailing if app is banned.
+    if True:
+        await asyncio.sleep(5)
+        await parse_test()
+        isapp_banned = get_app_status()
+        print(isapp_banned)
+        if isapp_banned:
+            get_name = get_app_name()
+            users_ids = get_subscribed_users()
+            for i in users_ids:
+                for b in i:
+                    await bot.send_message(chat_id=b, text= get_name)
+            delete_app()
 
 
 async def startup(dp: Dispatcher): # Send note startup
-    asyncio.create_task(send_note(dp.bot))
+    asyncio.create_task(check_app(dp.bot))
 
 executor.start_polling(dp, on_startup=startup)
 
